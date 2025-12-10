@@ -20,9 +20,9 @@ cd "$BIN_DIR" || exit
 jar cfe "../$OUT_DIR/$JAR_NAME" Agent.App Agent/App.class Agent/HelloWorld.class
 
 # Exécuter le JAR
-# echo "Exécution du fichier JAR..."
-# cd "../$OUT_DIR" || exit
-# java -jar "$JAR_NAME"
+echo "Exécution du fichier JAR..."
+cd "../$OUT_DIR" || exit
+java -jar "$JAR_NAME"
 
 # Optionnel : Nettoyer le répertoire bin
 # rm -rf "$BIN_DIR"
