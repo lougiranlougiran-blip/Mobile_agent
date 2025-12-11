@@ -7,6 +7,15 @@ import java.io.InputStream;
 
 public class AgentClassLoader extends ClassLoader  {
 
+    /*
+    @TODO
+
+    À REFAIRE
+
+    Le ClassLoader doit lire depuis un byte[] pas un fichier.
+    Regarder comment est fait JarFactory
+     */
+
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] b = loadClassFromFile(name);
@@ -25,7 +34,7 @@ public class AgentClassLoader extends ClassLoader  {
                 byteStream.write(nextValue);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         buffer = byteStream.toByteArray();

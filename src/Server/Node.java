@@ -1,14 +1,27 @@
 package Server;
 
-public class Node {
+import java.io.Serializable;
 
-    private String ns;
-    private int port;
+public class Node implements Serializable {
 
-    public Node(String n, int p) {
-        this.ns = n;
+    private final String ip;
+    private final int port;
+
+    public Node(String ip, int p) {
+        this.ip = ip;
         this.port = p;
     }
 
-    // TO DO 
+    public String getIP() {
+        return ip;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public String toString() {
+        return "IP address :  " + ip + "  -  " + "Port number : " + port;
+    }
 }
