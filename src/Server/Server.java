@@ -1,17 +1,21 @@
 package Server;
 
+import Agent.AgentImpl;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Hashtable;
 
 public class Server extends Thread {
 
-    Socket agentSocket;
+    private final Socket agentSocket;
 
-    // @TODO Creer le nameServer
+    // TODO
+    private Hashtable<String, Object> serverServices;
 
     public Server(Socket s) {
         this.agentSocket = s;
@@ -38,27 +42,25 @@ public class Server extends Thread {
         try {
             InputStream agentIS = agentSocket.getInputStream();
             DataInputStream dataIS = new DataInputStream(agentIS);
-            ObjectInputStream objectIS = new ObjectInputStream(agentIS);
 
-            // @TODO
+            int length = dataIS.readInt();
+            byte[] jar = agentIS.readNBytes(length);
 
-            // Recception de la taille du code
+            AgentClassLoader classLoader = new AgentClassLoader(jar, length);
 
-            // Reception du code
+            try (ObjectInputStream objectIS = new AgentObjectInputStream(agentIS, classLoader)) {
+                AgentImpl agent = (AgentImpl) objectIS.readObject();
 
-            // Creation d'un ClassLoader
+                agent.setNameServer(serverServices);
+                agent.main();
+            }
 
-            // On donne le code au ClassLoader pour traitement
-
-            // Reception des donnees (etat de l'agent)
-
-            // Deserialiser les donnees avec le ClassLoader
-
-            // ...
+            agentIS.close();
+            dataIS.close();
+            agentSocket.close();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }

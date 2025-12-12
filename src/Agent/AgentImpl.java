@@ -48,7 +48,7 @@ public class AgentImpl implements IAgent {
             "Agent/AgentImpl",
             "Agent/IAgent",
             "Agent/MoveException",
-            "Agent/Agent.Jarfactory",
+            "Agent/Jarfactory",
             "Server/Node"
     );
 
@@ -73,9 +73,7 @@ public class AgentImpl implements IAgent {
     }
 
     public void sendMessage() throws IOException {
-        JarFactory jw = new JarFactory(classList);
-
-        byte[] code = jw.createJar();
+         byte[] code = JarFactory.createJar(classList);
 
         dataOS.writeInt(code.length);    // On envoie la longueur du code
         socketOS.write(code);            // Ecritude du code

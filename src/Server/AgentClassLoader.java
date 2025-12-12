@@ -1,44 +1,25 @@
 package Server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import Agent.JarFactory;
+
 import java.io.IOException;
-import java.io.InputStream;
+
+import java.util.Map;
 
 public class AgentClassLoader extends ClassLoader  {
 
-    /*
-    @TODO
+    private final Map<String, byte[]> classCache;
 
-    À REFAIRE
-
-    Le ClassLoader doit lire depuis un byte[] pas un fichier.
-    Regarder comment est fait JarFactory
-     */
+    public AgentClassLoader(byte[] jarData, int length) throws IOException {
+        this.classCache = JarFactory.readJar(length, jarData);
+    }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        byte[] b = loadClassFromFile(name);
-        return defineClass(name, b, 0, b.length);
+        byte[] classBytes = classCache.get(name);
+
+        if (classBytes == null) throw new ClassNotFoundException(name);
+
+        return defineClass(name, classBytes, 0, classBytes.length);
     }
-
-    private byte[] loadClassFromFile(String fileName)  {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(
-                fileName.replace('.', File.separatorChar) + ".class");
-        byte[] buffer;
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        int nextValue = 0;
-
-        try {
-            while ((nextValue = inputStream.read()) != -1 ) {
-                byteStream.write(nextValue);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        buffer = byteStream.toByteArray();
-        return buffer;
-    }
-
 }
