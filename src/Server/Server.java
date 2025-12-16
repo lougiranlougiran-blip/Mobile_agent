@@ -1,5 +1,6 @@
 package Server;
 
+import Agent.Agent;
 import Agent.AgentImpl;
 
 import java.io.DataInputStream;
@@ -15,19 +16,20 @@ public class Server extends Thread {
     private final Socket agentSocket;
 
     // TODO
-    private Hashtable<String, Object> serverServices;
+    private Hashtable<String, Object> serverServices = new Hashtable<>();
 
     public Server(Socket s) {
         this.agentSocket = s;
+        serverServices.put("name", new Service("Service1"));
     }
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 2) {
+        if (args.length < 1) {
              System.err.println("Usage: " + args[0] + " " + "portNumber");
         }
 
-        int port = Integer.parseInt(args[1]);
+        int port = Integer.parseInt(args[0]);
 
         try (ServerSocket ss = new ServerSocket(port)) {
 
@@ -49,9 +51,9 @@ public class Server extends Thread {
             AgentClassLoader classLoader = new AgentClassLoader(jar, length);
 
             try (ObjectInputStream objectIS = new AgentObjectInputStream(agentIS, classLoader)) {
-                AgentImpl agent = (AgentImpl) objectIS.readObject();
+                AgentImpl agent = (Agent) objectIS.readObject();
 
-                agent.setNameServer(serverServices);
+                agent.setServerServices(serverServices);
                 agent.main();
             }
 

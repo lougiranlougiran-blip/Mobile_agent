@@ -10,38 +10,22 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 
-import Server.Node;
-
 public class AgentImpl implements IAgent {
 
     // -------------- init ------------------
-    private Node origin;
-    private String name;
+    private Agent service;
 
     // ------------- socket -----------------
     private Socket clientSocket;
 
     // ------------- streams (TO NOT SERIALIZED) ----------------
-    private transient OutputStream socketOS;
-    private transient ObjectOutputStream objectOS;
-    private transient DataOutputStream dataOS;
-
-    // -------------- moves ------------------
-
-    private Node previous;
-    private Node next;
-    private int index;
+    private OutputStream socketOS;
+    private ObjectOutputStream objectOS;
+    private DataOutputStream dataOS;
 
     // -------------- services ---------------
 
-    private Hashtable<String, Object> serverServices;
-
-    // private HashMap<String, Integer> nodes = new HashMap<>();
-    private final List<Node> nodes = Arrays.asList(
-            new Node("localhost", 2001),
-            new Node("localhost", 2002),
-            new Node("localhost", 2003)
-    );
+    protected Hashtable<String, Object> serverServices;
 
     private final List<String> classList = Arrays.asList(
             "Agent/Service",
@@ -52,12 +36,8 @@ public class AgentImpl implements IAgent {
             "Server/Node"
     );
 
-    public void init(String name, Node origin) {
-        this.name = name;
-        this.origin = origin;
-        index = 0;
-        next = nodes.get(index);
-        previous = null;
+    public void init(Agent service) {
+        this.service = service;
     }
 
     public void startConnection(String ip, int port) {
@@ -79,7 +59,7 @@ public class AgentImpl implements IAgent {
         socketOS.write(code);            // Ecritude du code
         socketOS.flush();                // Envoi immediat
 
-        objectOS.writeObject(this);
+        objectOS.writeObject(service);
         objectOS.flush();
     }
 
@@ -90,56 +70,27 @@ public class AgentImpl implements IAgent {
         clientSocket.close();
     }
 
-    public void goNext() {
-        previous = next;
-        next = nodes.get(index++);
-    }
-
-    public void goBack() {
-        previous = next;
-        next = null;
-        index = 0;
-    }
-
-    public boolean canMove() {
-        return index < nodes.size();
-    }
-
-    public Node getTarget() {
-        return next;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-	public void setNameServer(Hashtable<String,Object> ns) {
+	public void setServerServices(Hashtable<String,Object> ns) {
         this.serverServices = ns;
     }
 
-	public Hashtable<String,Object> getNameServer() {
+	public Hashtable<String,Object> getServerServices() {
         return serverServices;
     }
 
 	public void move() throws IOException {
-        goNext();
-        startConnection(next.getIP(), next.getPort());
+        service.goNext();
+        startConnection(service.nextGetIP(), service.nextGetPort());
         sendMessage();
         stopConnection();
     }
 
 	public void back() throws IOException {
-        goBack();
-        startConnection(origin.getIP(), origin.getPort());
+        service.goBack();
+        startConnection(service.getOrigin().getIP(), service.getOrigin().getPort());
         sendMessage();
         stopConnection();
     }
 
-	public void main() throws IOException {
-        // @TODO
-        // Code executer par l'agent
-        // À remplacer par une application (reseau de neurone, ...)
-        // En utilisant le nameServer
-        System.out.println("Hello");
-    }
+	public void main() throws IOException {}
 }

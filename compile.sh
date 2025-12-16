@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Répertoires de travail
-SRC_DIR="src/Agent"
+AGENT_DIR="src/Agent"
+SERVER_DIR="src/Server"
 BIN_DIR="bin"
 OUT_DIR="out"
-#JAR_NAME="app.jar"
 
 # Créer les répertoires si non existants
 mkdir -p "$BIN_DIR"
@@ -12,7 +12,7 @@ mkdir -p "$OUT_DIR"
 
 # Compiler les fichiers Java
 echo "Compilation des fichiers Java..."
-javac -d "$BIN_DIR" "$SRC_DIR"/*.java
+javac -d "$BIN_DIR" "$AGENT_DIR"/*.java "$SERVER_DIR"/*.java
 
 # Créer le fichier JAR
 #echo "Création du fichier JAR..."
