@@ -49,7 +49,6 @@ public class JarFactory {
             JarEntry entry;
 
             while ((entry = jarStream.getNextJarEntry()) != null) {
-                // @TODO former la bonne string
                 String classPath = entry.getName();
                 String className = classPath.replace("/", ".")
                                             .substring(0, classPath.length() - 6);

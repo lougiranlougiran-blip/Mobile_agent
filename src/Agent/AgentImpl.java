@@ -70,21 +70,25 @@ public abstract class AgentImpl implements IAgent {
         }
     }
 
-    public void sendMessage() throws IOException {
-        byte[] codeToSend;
-
-        if (ownCode != null) {
-            codeToSend = ownCode;
-        } else {
-            List<String> classList = Arrays.asList(
+    public List<String> getRequiredClasses() {
+        return Arrays.asList(
             "Agent.AgentImpl",
             "Agent.IAgent",
             "Agent.JarFactory",
             "Server.Service",
             "Server.Node",
             this.getClass().getName()
-            );
-            codeToSend = JarFactory.createJar(classList);
+        );
+    }
+
+    public void sendMessage() throws IOException {
+        byte[] codeToSend;
+
+        if (ownCode != null) {
+            codeToSend = ownCode;
+        } else {
+            List<String> classesList = getRequiredClasses();
+            codeToSend = JarFactory.createJar(classesList);
         }
 
         byte[] objectBytes = serializeObject(this);
@@ -186,7 +190,7 @@ public abstract class AgentImpl implements IAgent {
     public void execute() throws IOException {
         if (start) {
             start = false;
-            System.out.println("Agent " + name + "has successfully started.");
+            System.out.println("Agent " + name + " has successfully started.");
             System.out.println("Agent moving to: " + getTarget());
             move();
         } else if (canMove()) {

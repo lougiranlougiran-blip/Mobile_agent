@@ -18,8 +18,10 @@ public class AgentClassLoader extends ClassLoader  {
     public Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] classBytes = classes.get(name);
 
-        if (classBytes == null) throw new ClassNotFoundException(name);
+        if (classBytes != null) {
+            return defineClass(name, classBytes, 0, classBytes.length);
+        }
 
-        return defineClass(name, classBytes, 0, classBytes.length);
+        return super.findClass(name);
     }
 }

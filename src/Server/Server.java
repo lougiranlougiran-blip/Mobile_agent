@@ -21,9 +21,12 @@ public class Server extends Thread {
 
     private static volatile boolean isRunning = true;
 
-    public Server(Socket s) {
+    public Server(Socket s, boolean isTarget) {
         this.agentSocket = s;
-        serverServices.put("service", new Service("sum"));
+
+        if (isTarget) {
+            serverServices.put("imageProcessing", new Service("imageRecognition"));
+        }
     }
     
     public static void stopServer(String host, int port) {
@@ -76,7 +79,6 @@ public class Server extends Thread {
             try (ObjectInputStream objectIS = new AgentObjectInputStream(
                 new ByteArrayInputStream(objectBytes), classLoader)) {
                 AgentImpl agent = (AgentImpl) objectIS.readObject();
-                agent.setOwnCode(jar);
                 launchAgent(agent);
             }
 
@@ -109,7 +111,7 @@ public class Server extends Thread {
                         .getConstructor(String.class, int.class)
                         .newInstance(host, port);
 
-                new Server(null).launchAgent(agent);
+                new Server(null, false).launchAgent(agent);
             }
 
             while(isRunning) {
@@ -121,7 +123,7 @@ public class Server extends Thread {
                     break;
                 }
                 
-                new Server(s).start();
+                new Server(s, true).start();
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
