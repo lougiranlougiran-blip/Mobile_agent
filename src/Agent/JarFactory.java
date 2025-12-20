@@ -43,18 +43,19 @@ public class JarFactory {
 
     public static Map<String, byte[]> readJar(int length, byte[] jar) throws IOException {
         Map<String, byte[]> classList = new HashMap<>();
-        ByteArrayInputStream codeStream = new ByteArrayInputStream(jar, 0, length);
 
-        try (JarInputStream jarStream = new JarInputStream(codeStream)) {
+        try (JarInputStream jarStream = new JarInputStream(new ByteArrayInputStream(jar, 0, length))) {
             JarEntry entry;
 
             while ((entry = jarStream.getNextJarEntry()) != null) {
                 String classPath = entry.getName();
                 String className = classPath.replace("/", ".")
                                             .substring(0, classPath.length() - 6);
-                byte[] classBytes = jarStream.readAllBytes();
 
-                classList.put(className, classBytes);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                jarStream.transferTo(out);
+
+                classList.put(className, out.toByteArray());
             }
         }
         return classList;

@@ -18,7 +18,7 @@ public class AgentObjectInputStream extends ObjectInputStream {
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         try {
-            return agentClassLoader.loadClass(desc.getName());
+            return Class.forName(desc.getName(), false, agentClassLoader);
         } catch (ClassNotFoundException e) {
             return super.resolveClass(desc);
         }
