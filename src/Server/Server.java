@@ -1,6 +1,5 @@
 package Server;
 
-import Agent.Agent;
 import Agent.AgentImpl;
 
 import java.io.ByteArrayInputStream;
@@ -93,12 +92,13 @@ public class Server extends Thread {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length < 2) {
-             System.err.println("Usage: [-o|-t] " + args[1] + " " + "portNumber");
+        if (args.length < 3) {
+             System.err.println("Usage: [-o|-t] ipAddress portNumber");
         }
 
         boolean isOrigin = args[0].contains("-o");
-        int port = Integer.parseInt(args[1]);
+        String host = args[1];
+        int port = Integer.parseInt(args[2]);
 
         try (ServerSocket ss = new ServerSocket(port)) {
 
@@ -106,7 +106,7 @@ public class Server extends Thread {
                 Class<?> agentClass = Class.forName("Agent.Agent");
                 AgentImpl agent = (AgentImpl) agentClass
                         .getConstructor(String.class, int.class)
-                        .newInstance("localhost", port);
+                        .newInstance(host, port);
 
                 new Server(null).launchAgent(agent);
             }

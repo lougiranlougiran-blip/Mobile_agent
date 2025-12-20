@@ -16,9 +16,10 @@ public class Agent extends AgentImpl {
         super();
 
         List<Node> nodes = Arrays.asList(
-            new Node("localhost", 2001),
-            new Node("localhost", 2002),
-            new Node("localhost", 2003)
+            new Node("192.168.0.43", 2001),
+            new Node("192.168.0.43", 2002),
+            new Node("192.168.0.28", 2003),
+            new Node("192.168.0.28", 2004)
         );
 
         origin = new Node(host, port);
