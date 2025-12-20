@@ -14,22 +14,8 @@ import java.util.jar.JarOutputStream;
 public class JarFactory {
 
     private static byte[] loadClassByteCode(String className) throws IOException {
-        try (InputStream inputStream = JarFactory.class.getClassLoader().getResourceAsStream(className + ".class")) {
-            byte[] buffer;
-            ByteArrayOutputStream bs = new ByteArrayOutputStream();
-            int nextValue;
-
-            try {
-                while ((nextValue = inputStream.read()) != -1) {
-                    bs.write(nextValue);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            buffer = bs.toByteArray();
-
-            return buffer;
+        try (InputStream inputStream = JarFactory.class.getClassLoader().getResourceAsStream(className)) {
+            return inputStream.readAllBytes();
         }
     }
 
@@ -39,11 +25,11 @@ public class JarFactory {
         try (JarOutputStream jos = new JarOutputStream(baos)) {
 
             for (String className : dependancies) {
-                byte[] classBytes = loadClassByteCode(className);
+                String classPath = className.replace(".", "/") + ".class";
 
-                // @TODO former la bonne string
-                String entryName = className + ".class";            // Creer une entree JAR
-                JarEntry entry = new JarEntry(entryName);           // Ajout de l'entree
+                byte[] classBytes = loadClassByteCode(classPath);
+
+                JarEntry entry = new JarEntry(classPath);           // Ajout d'une entree
                 entry.setSize(classBytes.length);
                 jos.putNextEntry(entry);                            // Ecriture des metadonnees (nom, taille, ...)
 
@@ -64,8 +50,10 @@ public class JarFactory {
 
             while ((entry = jarStream.getNextJarEntry()) != null) {
                 // @TODO former la bonne string
-                String className = entry.getName();
-                byte[] classBytes = jarStream.readAllBytes();       // Lit les bytes uniquement de l'entree courante
+                String classPath = entry.getName();
+                String className = classPath.replace("/", ".")
+                                            .substring(0, classPath.length() - 6);
+                byte[] classBytes = jarStream.readAllBytes();
 
                 classList.put(className, classBytes);
             }

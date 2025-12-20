@@ -1,8 +1,8 @@
 package Server;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.InputStream;
 import java.io.ObjectStreamClass;
 import java.lang.ClassLoader;
 
@@ -10,7 +10,7 @@ public class AgentObjectInputStream extends ObjectInputStream {
 
     private final ClassLoader agentClassLoader;
 
-    public AgentObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
+    public AgentObjectInputStream(ByteArrayInputStream in, ClassLoader loader) throws IOException {
         super(in);
         this.agentClassLoader = loader;
     }

@@ -1,5 +1,6 @@
 package Agent;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -20,6 +21,7 @@ public class AgentImpl implements IAgent {
 
     // ------------- streams (TO NOT SERIALIZED) ----------------
     private OutputStream socketOS;
+    private ByteArrayOutputStream objectBAOS;
     private ObjectOutputStream objectOS;
     private DataOutputStream dataOS;
 
@@ -28,12 +30,11 @@ public class AgentImpl implements IAgent {
     protected Hashtable<String, Object> serverServices;
 
     private final List<String> classList = Arrays.asList(
-            "Agent/Service",
-            "Agent/AgentImpl",
-            "Agent/IAgent",
-            "Agent/MoveException",
-            "Agent/Jarfactory",
-            "Server/Node"
+            "Agent.Service",
+            "Agent.AgentImpl",
+            "Agent.IAgent",
+            "Agent.Jarfactory",
+            "Server.Node"
     );
 
     public void init(Agent service) {
@@ -43,8 +44,10 @@ public class AgentImpl implements IAgent {
     public void startConnection(String ip, int port) {
         try {
             clientSocket = new Socket(ip, port);
+
             socketOS= clientSocket.getOutputStream();
-            objectOS = new ObjectOutputStream(socketOS);
+            objectBAOS = new ByteArrayOutputStream();
+            objectOS = new ObjectOutputStream(objectBAOS);
             dataOS = new DataOutputStream(socketOS);
 
         } catch (Exception e) {
@@ -52,19 +55,31 @@ public class AgentImpl implements IAgent {
         }
     }
 
+    public byte[] serializeObject(Object obj) {
+        try {
+        objectOS.writeObject(obj);
+        objectOS.flush();
+        return objectBAOS.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void sendMessage() throws IOException {
-         byte[] code = JarFactory.createJar(classList);
+        byte[] codeBytes = JarFactory.createJar(classList);
+        byte[] objectBytes = serializeObject(service);
 
-        dataOS.writeInt(code.length);    // On envoie la longueur du code
-        socketOS.write(code);            // Ecritude du code
-        socketOS.flush();                // Envoi immediat
-
-        objectOS.writeObject(service);
+        dataOS.writeInt(codeBytes.length);
+        dataOS.write(codeBytes);
+        dataOS.writeInt(objectBytes.length);
+        dataOS.write(objectBytes);
         objectOS.flush();
     }
 
     public void stopConnection() throws IOException {
         dataOS.close();
+        objectBAOS.close();
         objectOS.close();
         socketOS.close();
         clientSocket.close();

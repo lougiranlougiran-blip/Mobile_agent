@@ -3,6 +3,7 @@ package Server;
 import Agent.Agent;
 import Agent.AgentImpl;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,12 +46,16 @@ public class Server extends Thread {
             InputStream agentIS = agentSocket.getInputStream();
             DataInputStream dataIS = new DataInputStream(agentIS);
 
-            int length = dataIS.readInt();
-            byte[] jar = agentIS.readNBytes(length);
+            int jarLength = dataIS.readInt();
+            byte[] jar = dataIS.readNBytes(jarLength);
 
-            AgentClassLoader classLoader = new AgentClassLoader(jar, length);
+            int objectLength = dataIS.readInt();
+            byte[] objectBytes = dataIS.readNBytes(objectLength);
 
-            try (ObjectInputStream objectIS = new AgentObjectInputStream(agentIS, classLoader)) {
+            AgentClassLoader classLoader = new AgentClassLoader(jar, jarLength);
+
+            try (ObjectInputStream objectIS = new AgentObjectInputStream(
+                new ByteArrayInputStream(objectBytes), classLoader)) {
                 AgentImpl agent = (Agent) objectIS.readObject();
 
                 agent.setServerServices(serverServices);
