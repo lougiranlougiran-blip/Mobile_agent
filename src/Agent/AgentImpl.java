@@ -23,6 +23,7 @@ public abstract class AgentImpl implements IAgent {
     private transient ObjectOutputStream objectOS;
     private transient DataOutputStream dataOS;
 
+    protected byte[] ownCode;
     protected boolean start = true;
     protected String name;
     protected Node origin;
@@ -70,20 +71,26 @@ public abstract class AgentImpl implements IAgent {
     }
 
     public void sendMessage() throws IOException {
-        List<String> classList = Arrays.asList(
+        byte[] codeToSend;
+
+        if (ownCode != null) {
+            codeToSend = ownCode;
+        } else {
+            List<String> classList = Arrays.asList(
             "Agent.AgentImpl",
             "Agent.IAgent",
             "Agent.JarFactory",
             "Server.Service",
             "Server.Node",
             this.getClass().getName()
-        );
+            );
+            codeToSend = JarFactory.createJar(classList);
+        }
 
-        byte[] codeBytes = JarFactory.createJar(classList);
         byte[] objectBytes = serializeObject(this);
 
-        dataOS.writeInt(codeBytes.length);
-        dataOS.write(codeBytes);
+        dataOS.writeInt(codeToSend.length);
+        dataOS.write(codeToSend);
         dataOS.writeInt(objectBytes.length);
         dataOS.write(objectBytes);
         objectOS.flush();
@@ -121,6 +128,10 @@ public abstract class AgentImpl implements IAgent {
         startConnection(this.getOrigin().getHost(), this.getOrigin().getPort());
         sendMessage();
         stopConnection();
+    }
+
+    public void setOwnCode(byte[] code) {
+        this.ownCode = code;
     }
 
     public Node getOrigin() {

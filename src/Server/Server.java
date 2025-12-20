@@ -76,6 +76,7 @@ public class Server extends Thread {
             try (ObjectInputStream objectIS = new AgentObjectInputStream(
                 new ByteArrayInputStream(objectBytes), classLoader)) {
                 AgentImpl agent = (AgentImpl) objectIS.readObject();
+                agent.setOwnCode(jar);
                 launchAgent(agent);
             }
 
