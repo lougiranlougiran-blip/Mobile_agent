@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
@@ -15,28 +16,47 @@ import java.util.Hashtable;
 public class Server extends Thread {
 
     private final Socket agentSocket;
+    private String lockID;
 
-    // TODO
     private Hashtable<String, Object> serverServices = new Hashtable<>();
+
+    private static volatile boolean isRunning = true;
 
     public Server(Socket s) {
         this.agentSocket = s;
-        serverServices.put("name", new Service("Service1"));
+        serverServices.put("service", new Service("sum"));
+    }
+    
+    public static void stopServer(String host, int port) {
+        isRunning = false;
+
+        // Socket pour débloquer le serveur d'origine
+        try (Socket ignored = new Socket(host, port)) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static void main(String[] args) throws IOException {
+    public void launchAgent(AgentImpl agent) {
+        Object lock = new Object();
+        lockID = agent.getClass().getName() + "_lock";
+        serverServices.put(lockID, lock);
 
-        if (args.length < 1) {
-             System.err.println("Usage: " + args[0] + " " + "portNumber");
-        }
+        agent.setServerServices(serverServices);
 
-        int port = Integer.parseInt(args[0]);
+        synchronized(lock) {
+            new Thread(() -> {
+                try {
+                    agent.main();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
 
-        try (ServerSocket ss = new ServerSocket(port)) {
-
-            while(true) {
-                Socket s = ss.accept();
-                new Server(s).start();
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -56,17 +76,54 @@ public class Server extends Thread {
 
             try (ObjectInputStream objectIS = new AgentObjectInputStream(
                 new ByteArrayInputStream(objectBytes), classLoader)) {
-                AgentImpl agent = (Agent) objectIS.readObject();
-
-                agent.setServerServices(serverServices);
-                agent.main();
+                AgentImpl agent = (AgentImpl) objectIS.readObject();
+                launchAgent(agent);
             }
+
+            serverServices.remove(lockID);
 
             agentIS.close();
             dataIS.close();
             agentSocket.close();
 
         } catch (Exception e) {
+            if (isRunning) throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        if (args.length < 2) {
+             System.err.println("Usage: [-o|-t] " + args[1] + " " + "portNumber");
+        }
+
+        boolean isOrigin = args[0].contains("-o");
+        int port = Integer.parseInt(args[1]);
+
+        try (ServerSocket ss = new ServerSocket(port)) {
+
+            if (isOrigin) {
+                Class<?> agentClass = Class.forName("Agent.Agent");
+                AgentImpl agent = (AgentImpl) agentClass
+                        .getConstructor(String.class, int.class)
+                        .newInstance("localhost", port);
+
+                new Server(null).launchAgent(agent);
+            }
+
+            while(isRunning) {
+                Socket s = ss.accept();
+
+                // Si l'agent a envoyé le signal d'arrêt, nous devons ignorer la connexion fantôme
+                if (!isRunning) {
+                    s.close();
+                    break;
+                }
+                
+                new Server(s).start();
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

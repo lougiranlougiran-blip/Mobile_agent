@@ -4,16 +4,16 @@ import java.io.Serializable;
 
 public class Node implements Serializable {
 
-    private final String ip;
+    private final String host;
     private final int port;
 
-    public Node(String ip, int p) {
-        this.ip = ip;
+    public Node(String host, int p) {
+        this.host = host;
         this.port = p;
     }
 
-    public String getIP() {
-        return ip;
+    public String getHost() {
+        return host;
     }
 
     public int getPort() {
@@ -22,6 +22,6 @@ public class Node implements Serializable {
 
     @Override
     public String toString() {
-        return "IP address :  " + ip + "  -  " + "Port number : " + port;
+        return host + "  -  " + port;
     }
 }
