@@ -49,7 +49,9 @@ public class Agent extends AgentImpl {
         for (int i = 0; i < output.length; i++) {
             if (output[i] != inputLabels[i]) {
                 MNISTLoader.DisplayImage(inputData[i]);
-                System.out.println("\u001B[31m" + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m");
+                System.out.println("\u001B[31m" 
+                    + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
+                );
                 System.out.println("-------------------------------------------------------");
             }
         }
@@ -61,7 +63,7 @@ public class Agent extends AgentImpl {
 
     @Override
     public void onComeBack() {
-        System.out.print("\n\n");
+        System.out.print("\n");
         double finalAccuracy = 0.0;
 
         for (double accuracy : predictions) {
