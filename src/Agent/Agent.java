@@ -38,11 +38,19 @@ public class Agent extends AgentImpl {
     @Override
     public void process() {
         Service s = (Service) serverServices.get("imageProcessing");
-        System.out.println("Processing with: " + s.getName());
-        
+        System.out.println("Using service: " + s.getName());
 
-        double[][] inputData = s.getInputData();
-        double[] inputLabels = s.getInputLabels();
+        int totalDatasetSize = 10_000;
+        int partitionSize = totalDatasetSize / nodes.size();
+        int currentNodeIndex = (index - 1 + nodes.size()) % nodes.size();
+        int start = currentNodeIndex * partitionSize;
+
+        if (currentNodeIndex == nodes.size() - 1) {
+            partitionSize = totalDatasetSize - start; 
+        }
+
+        double[][] inputData = s.getBatchData(start, partitionSize);
+        double[] inputLabels = s.getBatchLabels(start, partitionSize);
         double[] output = net.PredictAllClasses(inputData);
 
 

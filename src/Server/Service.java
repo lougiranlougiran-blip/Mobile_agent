@@ -7,35 +7,30 @@ import Loader.MNISTLoader;
 public class Service {
 
     private String name;
-    private double[][] testData;
-    private double[] testLabels;
     private String path = "src/resources/MNIST/";
 
     public Service(String name) {
         this.name = name;
-        init();
-    }
-
-    public void init() {
-        try {
-            testData = MNISTLoader.getTestData(path);
-            testLabels = MNISTLoader.getTestLabels(path);
-            System.out.println("testData: length=" + testData.length + " features=" + testData[0].length);
-            System.out.println("testLabels: length=" + testLabels.length);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public String getName() {
         return name;
     }
 
-    public double[][] getInputData() {
-        return testData;
+    public double[][] getBatchData(int start, int count) {
+        try {
+            System.out.println("Service loading data from " + start + " to " + (start + count));
+            return MNISTLoader.getTestBatchData(path, start, count);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public double[] getInputLabels() {
-        return testLabels;
+    public double[] getBatchLabels(int start, int count) {
+        try {
+            return MNISTLoader.getTestBatchLabels(path, start, count);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -99,6 +99,68 @@ public class MNISTLoader {
         }
     }
 
+    public static double[][] readImagesBatch(String filePath, int start, int count, 
+                                           int numberOfRows, int numberOfColumns) throws IOException {
+        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(filePath))) {
+            buffer.skip(16);
+
+            int imageSize = numberOfRows * numberOfColumns;
+            
+            long bytesToSkip = (long) start * imageSize;
+            buffer.skip(bytesToSkip);
+
+            byte[][] images = new byte[count][imageSize];
+            for (int i = 0; i < count; i++) {
+                if (buffer.read(images[i]) == -1) break;
+            }
+
+            return NormalizeImages(images);
+        }
+    }
+
+    public static double[] readLabelsBatch(String filePath, int start, int count) throws IOException {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))) {
+            bis.skip(8);
+
+            bis.skip(start);
+
+            double[] labels = new double[count];
+            for (int i = 0; i < count; i++) {
+                int val = bis.read();
+                if (val == -1) break;
+                labels[i] = val;
+            }
+            return labels;
+        }
+    }
+
+    public static double[][] getTestBatchData(String path, int start, int count) throws IOException {
+        String filePath = path + "t10k-images.idx3-ubyte";
+        int[] headerInfos = readImagesHeader(filePath);
+        if (headerInfos != null) {
+            int maxImages = headerInfos[1];
+            if (start >= maxImages) return new double[0][0];
+            int realCount = Math.min(count, maxImages - start);
+            
+            return readImagesBatch(filePath, start, realCount, headerInfos[2], headerInfos[3]);
+        }
+        return null;
+    }
+
+    public static double[] getTestBatchLabels(String path, int start, int count) throws IOException {
+        String filePath = path + "t10k-labels.idx1-ubyte";
+        int[] headerInfos = readLabelsHeader(filePath);
+        if (headerInfos != null) {
+            int maxLabels = headerInfos[1];
+            if (start >= maxLabels) return new double[0];
+            int realCount = Math.min(count, maxLabels - start);
+
+            return readLabelsBatch(filePath, start, realCount);
+        }
+        return null;
+    }
+
+
     public static double[][] NormalizeImages(byte[][] images) {
         double[][] normalizedImages = new double[images.length][images[0].length];
         for (int i = 0; i < images.length; i++) {

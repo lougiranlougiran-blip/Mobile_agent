@@ -118,36 +118,8 @@ public abstract class AgentImpl implements IAgent {
         return serverServices;
     }
 
-    @Override
-	public void move() throws IOException {
-        this.goNext();
-        startConnection(this.getTargetHost(), this.getTargetPort());
-        sendMessage();
-        stopConnection();
-    }
-
-    @Override
-	public void back() throws IOException {
-        this.goBack();
-        startConnection(this.getOrigin().getHost(), this.getOrigin().getPort());
-        sendMessage();
-        stopConnection();
-    }
-
     public void setOwnCode(byte[] code) {
         this.ownCode = code;
-    }
-
-    public Node getOrigin() {
-        return origin;
-    }
-
-    public String getTargetHost() {
-        return next.getHost();
-    }
-
-    public int getTargetPort() {
-        return next.getPort();
     }
 
     public void goNext() {
@@ -161,22 +133,26 @@ public abstract class AgentImpl implements IAgent {
         index = 0;
     }
 
-    public boolean canMove() {
-        return index < nodes.size();
+    @Override
+	public void move() throws IOException {
+        this.goNext();
+        startConnection(next.getHost(), next.getPort());
+        sendMessage();
+        stopConnection();
     }
 
-    public Node getTarget() {
-        return next;
-    }
-
-    public Node getPrevious() {
-        return previous;
+    @Override
+	public void back() throws IOException {
+        this.goBack();
+        startConnection(origin.getHost(), origin.getPort());
+        sendMessage();
+        stopConnection();
     }
 
     @Override
     public void main() throws IOException {
 
-        if (getTarget() == null) {
+        if (next == null) {
             onComeBack();
             Server.stopServer(origin.getHost(), origin.getPort());
         } else {
@@ -191,17 +167,17 @@ public abstract class AgentImpl implements IAgent {
         if (start) {
             start = false;
             System.out.println("Agent " + name + " has successfully started.");
-            System.out.println("Agent moving to: " + getTarget());
+            System.out.println("Agent moving to: " + next);
             move();
-        } else if (canMove()) {
-            System.out.println("Agent coming from: " + getPrevious());
+        } else if (index < nodes.size()) {
+            System.out.println("Agent coming from: " + previous);
             process();
-            System.out.println("Agent moving to: " + getTarget());
+            System.out.println("Agent moving to: " + next);
             move();
         } else {
-            System.out.println("Agent coming from: " + getPrevious());
+            System.out.println("Agent coming from: " + previous);
             process();
-            System.out.println("Agent moving to: " + getOrigin());
+            System.out.println("Agent moving to: " + origin);
             back();
         }
     }
