@@ -22,10 +22,10 @@ public class Agent extends AgentImpl {
         super();
 
         List<Node> nodes = Arrays.asList(
-            new Node("192.168.0.43", 2001),
-            new Node("192.168.0.43", 2002),
-            new Node("192.168.0.28", 2003),
-            new Node("192.168.0.28", 2004)
+            new Node("127.0.0.1", 2001),
+            new Node("127.0.0.1", 2002),
+            new Node("127.0.0.1", 2003),
+            new Node("127.0.0.1", 2004)
         );
 
         origin = new Node(host, port);
