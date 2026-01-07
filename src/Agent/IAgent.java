@@ -20,4 +20,6 @@ public interface IAgent extends Serializable {
 	public void back() throws IOException;
 
 	public void main() throws IOException;
+
+	public void setOwnCode(byte[] code);
 }

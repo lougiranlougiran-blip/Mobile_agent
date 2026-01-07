@@ -1,6 +1,6 @@
 package Server;
 
-import Agent.AgentImpl;
+import Agent.IAgent;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -39,7 +39,7 @@ public class Server extends Thread {
         }
     }
 
-    public void launchAgent(AgentImpl agent) {
+    public void launchAgent(IAgent agent) {
         Object lock = new Object();
         lockID = agent.getClass().getName() + "_lock";
         serverServices.put(lockID, lock);
@@ -78,7 +78,7 @@ public class Server extends Thread {
 
             try (ObjectInputStream objectIS = new AgentObjectInputStream(
                 new ByteArrayInputStream(objectBytes), classLoader)) {
-                AgentImpl agent = (AgentImpl) objectIS.readObject();
+                IAgent agent = (IAgent) objectIS.readObject();
                 agent.setOwnCode(jar);
                 launchAgent(agent);
             }
@@ -108,7 +108,7 @@ public class Server extends Thread {
 
             if (isOrigin) {
                 Class<?> agentClass = Class.forName("Agent.Agent");
-                AgentImpl agent = (AgentImpl) agentClass
+                IAgent agent = (IAgent) agentClass
                         .getConstructor(String.class, int.class)
                         .newInstance(host, port);
 

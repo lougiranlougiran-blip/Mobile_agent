@@ -118,6 +118,7 @@ public abstract class AgentImpl implements IAgent {
         return serverServices;
     }
 
+    @Override
     public void setOwnCode(byte[] code) {
         this.ownCode = code;
     }

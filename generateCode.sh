@@ -22,6 +22,7 @@ mkdir -p "$TEMP_DIR/src/resources/MNIST"
 # Copie src/Agent mais exclut Agent.java
 cp -r src/Agent/* "$TEMP_DIR/src/Agent/"
 rm -f "$TEMP_DIR/src/Agent/Agent.java"
+rm -f "$TEMP_DIR/src/Agent/AgentImpl.java"
 
 # Copie intégrale des autres dossiers
 cp -r src/Server/* "$TEMP_DIR/src/Server/"
