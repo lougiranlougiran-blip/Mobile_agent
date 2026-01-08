@@ -13,15 +13,14 @@ rm -f "$ZIP_NAME"
 echo "--- Préparation de l'archive ---"
 
 # 1. Création de la structure des dossiers
-mkdir -p "$TEMP_DIR/src/Agent"
 mkdir -p "$TEMP_DIR/src/Server"
 mkdir -p "$TEMP_DIR/src/Loader"
 mkdir -p "$TEMP_DIR/src/resources/MNIST"
 
-# 2. Copie des fichiers en respectant les exclusions
-# Copie src/Agent mais exclut Agent.java
-cp -r src/Agent/* "$TEMP_DIR/src/Agent/"
-rm -f "$TEMP_DIR/src/Agent/Agent.java"
+# # 2. Copie des fichiers en respectant les exclusions
+# # Copie src/Agent mais exclut Agent.java
+# cp -r src/Agent/* "$TEMP_DIR/src/Agent/"
+# rm -f "$TEMP_DIR/src/Agent/Agent.java"
 
 # Copie intégrale des autres dossiers
 cp -r src/Server/* "$TEMP_DIR/src/Server/"

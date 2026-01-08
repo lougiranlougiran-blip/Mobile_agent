@@ -12,4 +12,4 @@ mkdir -p "$OUT_DIR"
 
 javac -d "$OUT_DIR" -cp "$SRC_DIR" $(find "$SRC_DIR" -name "*.java")
 
-java -cp "$OUT_DIR" Server.Server "$@"
+java -cp "$OUT_DIR" Server.ServeurRMI "$@"
