@@ -34,7 +34,7 @@ public class Server extends Thread {
         isRunning = false;
 
         // Socket pour débloquer le serveur d'origine
-        try (Socket ignored = new Socket(host, port)) {
+        try (Socket _ = new Socket(host, port)) {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
