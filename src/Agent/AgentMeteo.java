@@ -1,13 +1,11 @@
 package Agent;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
 import Server.Node;
 import Server.ServiceMeteo;
-import java.rmi.RemoteException;
 
 public class AgentMeteo extends AgentImpl {
 
