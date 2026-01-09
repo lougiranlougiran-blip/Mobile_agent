@@ -1,16 +1,14 @@
 package Client;
 
+import Loader.MNISTLoader;
+import Model.NeuralNetwork;
 import Server.Service;
-import Server.ServeurRMI;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-
-import Model.NeuralNetwork;
-import Loader.MNISTLoader;
 
 
 public class Client {
@@ -26,13 +24,6 @@ public class Client {
         }
 
         net = NeuralNetwork.LoadFromFile("src/resources/model.txt");
-        // Integer port1 = Integer.parseInt(args[0]);
-        // Integer port2 = Integer.parseInt(args[1]);
-        // Integer port3 = Integer.parseInt(args[2]);
-
-        // Service service1 = (Service) Naming.lookup("//localhost:" + args[0] + "/ServiceImp");
-        // Service service2 = (Service) Naming.lookup("//localhost:" + args[1] + "/ServiceImp");
-        // Service service3 = (Service) Naming.lookup("//localhost:" + args[2] + "/ServiceImp");
 
         /** a faire sur chaque serveur */
         for (int index = 0; index < 3; index++) {

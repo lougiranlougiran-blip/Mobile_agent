@@ -16,8 +16,8 @@ public final class ServeurRMI {
     try {
         /* recuperation de l'argument : port sur la machine*/
 
-        if (args.length < 1) {
-            System.err.println("Usage : java ServerRMI <port>");
+        if (args.length < 2) {
+            System.err.println("Usage : java ServerRMI <port> <t Temperature, p pression, h humidite>");
             System.exit(1);
         }
         String port = args[0];
@@ -28,9 +28,25 @@ public final class ServeurRMI {
 
         // Création du service
         Service service = new ServiceImp(port);
+        String typeServiceMeteo = "";
+        switch (args[1]) {
+          case "t" :
+              typeServiceMeteo = "Temperature";
+              break;
+          case "h" :
+              typeServiceMeteo = "Humidite";
+              break;
+          case "p" :
+              typeServiceMeteo = "Pression";
+              break;
+          default:
+              throw new AssertionError();
+        }
+        ServiceMeteo serviceMeteo = new ServiceMeteoImp(typeServiceMeteo);
 
         // Publication du service
         Naming.rebind(serverURI + "/ServiceImp", service);
+        Naming.rebind(serverURI + "/ServiceMeteoImp", serviceMeteo);
 
         System.out.println("Serveur RMI prêt");
 
