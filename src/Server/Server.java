@@ -1,7 +1,6 @@
 package Server;
 
 import Agent.IAgent;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -16,6 +15,7 @@ public class Server extends Thread {
 
     private final Socket agentSocket;
     private String lockID;
+    private static String meteoType; // type de meteo a laquel on a acces
 
     private Hashtable<String, Object> serverServices = new Hashtable<>();
 
@@ -26,6 +26,7 @@ public class Server extends Thread {
 
         if (isTarget) {
             serverServices.put("imageProcessing", new Service("imageRecognition"));
+            serverServices.put("meteo", new ServiceMeteo(meteoType));
         }
     }
     
@@ -97,22 +98,46 @@ public class Server extends Thread {
     public static void main(String[] args) throws IOException {
 
         if (args.length < 3) {
-             System.err.println("Usage: [-o|-t] ipAddress portNumber");
+             System.err.println("Usage: [-o|-t] ipAddress portNumber <type de meteo : t p h, defaut temperature> <type agent NN Meteo, defaut NN>");
         }
 
         boolean isOrigin = args[0].contains("-o");
         String host = args[1];
         int port = Integer.parseInt(args[2]);
 
+        // initialisation du serveur meteo, acces a 1 seul donnee
+        switch (args[3]) {
+          case "t" :
+              meteoType = "Temperature";
+              break;
+          case "h" :
+              meteoType = "Humidite";
+              break;
+          case "p" :
+              meteoType = "Pression";
+              break;
+          default:
+              meteoType = "Temperature";
+        }
+
         try (ServerSocket ss = new ServerSocket(port)) {
 
             if (isOrigin) {
-                Class<?> agentClass = Class.forName("Agent.Agent");
-                IAgent agent = (IAgent) agentClass
-                        .getConstructor(String.class, int.class)
-                        .newInstance(host, port);
+                if (args[4].contains("Meteo")) {
+                    Class<?> agentClass = Class.forName("Agent.AgentMeteo");
+                    IAgent agent = (IAgent) agentClass
+                            .getConstructor(String.class, int.class)
+                            .newInstance(host, port);
 
-                new Server(null, false).launchAgent(agent);
+                    new Server(null, false).launchAgent(agent);
+                } else { 
+                    Class<?> agentClass = Class.forName("Agent.Agent");
+                    IAgent agent = (IAgent) agentClass
+                            .getConstructor(String.class, int.class)
+                            .newInstance(host, port);
+
+                    new Server(null, false).launchAgent(agent);
+                }
             }
 
             while(isRunning) {

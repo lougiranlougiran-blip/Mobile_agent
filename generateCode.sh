@@ -16,11 +16,15 @@ echo "--- Préparation de l'archive ---"
 mkdir -p "$TEMP_DIR/src/Server"
 mkdir -p "$TEMP_DIR/src/Loader"
 mkdir -p "$TEMP_DIR/src/resources/MNIST"
+mkdir -p "$TEMP_DIR/src/resources/Meteo"
+mkdir -p "$TEMP_DIR/src/Agent/"
 
-# # 2. Copie des fichiers en respectant les exclusions
-# # Copie src/Agent mais exclut Agent.java
-# cp -r src/Agent/* "$TEMP_DIR/src/Agent/"
-# rm -f "$TEMP_DIR/src/Agent/Agent.java"
+# 2. Copie des fichiers en respectant les exclusions
+# Copie src/Agent mais exclut Agent.java
+cp -r src/Agent/* "$TEMP_DIR/src/Agent/"
+rm -f "$TEMP_DIR/src/Agent/Agent.java"
+rm -f "$TEMP_DIR/src/Agent/AgentImpl.java"
+rm -f "$TEMP_DIR/src/Agent/AgentMeteo.java"
 
 # Copie intégrale des autres dossiers
 cp -r src/Server/* "$TEMP_DIR/src/Server/"
@@ -34,10 +38,11 @@ else
     echo "Attention: run.sh introuvable !"
 fi
 
-# 4. Copie du dosser MNIST
+# 4. Copie du dosser MNIST et du dossier meteo
 if [ -d "src/resources/MNIST" ]; then
     cp -r src/resources/MNIST/* "$TEMP_DIR/src/resources/MNIST/"
 fi
+cp -r src/resources/Meteo/* "$TEMP_DIR/src/resources/Meteo/"
 
 # 5. Création du ZIP
 cd "$TEMP_DIR"
