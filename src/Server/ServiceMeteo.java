@@ -106,5 +106,5 @@ private static double[][] loadCSV(String path, int N) {
 
     // Transforme la liste dynamique en tableau 2D fixe
     return rows.toArray(new double[0][]);
+    }
 }
-
