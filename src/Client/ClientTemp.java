@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
 
 
 
-// client qui utilise un autre service
+// client qui utilise le service météo
 public class ClientTemp {
     
     public static void main (String args[]) throws NotBoundException, MalformedURLException, RemoteException {
@@ -24,12 +24,12 @@ public class ClientTemp {
         }
 
         for (int index = 0; index < 3; index++) {
+            // on va sur la machine suivante, on recupère le stub rmi
             ServiceMeteo s = (ServiceMeteo) Naming.lookup("//localhost:" + args[index] + "/ServiceMeteoImp");
-            // System.out.println("Using service: " + s.getName());
 
             int count = Integer.parseInt(args[3]);
 
-
+            // en fonction de sur quel serveur on est, on ne recupère pas les mêmes données : 3 serveurs, 1 pour chaque donnée
             switch (index) {
                 case 0 :
                     double[][] tmp = s.getTemperatureData(count);
@@ -48,15 +48,12 @@ public class ClientTemp {
             }
         }
 
-        // System.out.println("Temperature : " + String.valueOf(Temperature));
-        // System.out.println("Humidite : " + String.valueOf(Humidite));
-        // System.out.println("Pression : " + String.valueOf(Pression));
-        // System.out.print("\n\n");
-
         
 
 
-        /** fin de la recuperation des données */
+        /** fin de la recuperation des données 
+         * on ecrit les données dans le terminal
+        */
         System.out.println("Temperature : " + String.valueOf(Temperature));
         System.out.println("Humidite : " + String.valueOf(Humidite));
         System.out.println("Pression : " + String.valueOf(Pression));
@@ -65,11 +62,13 @@ public class ClientTemp {
 
     }
 
+    /** fonction privé permettant de calculer la moyenne des données renvoyé par le serveur */
     private static double average(double[][] data) {
+        // si la data est vide, on evite les erreurs 
         if (data == null || data.length == 0) {
             return 0.0;
         }
-
+        // calcule de la moyenne
         double sum = 0.0;
         for (double[] row : data) {
             sum += row[0];

@@ -14,8 +14,8 @@ public final class ServeurRMI {
 
   public static void main(String args[]) {
     try {
-        /* recuperation de l'argument : port sur la machine*/
 
+        /* recuperation de l'argument : port sur la machine type de donne pour la meteo*/
         if (args.length < 2) {
             System.err.println("Usage : java ServerRMI <port> <t Temperature, p pression, h humidite>");
             System.exit(1);
@@ -26,8 +26,10 @@ public final class ServeurRMI {
         /* Launching the naming service – rmiregistry – within the JVM */
         LocateRegistry.createRegistry(Integer.parseInt(port));
 
-        // Création du service
+        // Création du service pour le reseau de neurones
         Service service = new ServiceImp(port);
+        
+        // Création du service pour la Meteo
         String typeServiceMeteo = "";
         switch (args[1]) {
           case "t" :
@@ -44,7 +46,7 @@ public final class ServeurRMI {
         }
         ServiceMeteo serviceMeteo = new ServiceMeteoImp(typeServiceMeteo);
 
-        // Publication du service
+        // Publication des services
         Naming.rebind(serverURI + "/ServiceImp", service);
         Naming.rebind(serverURI + "/ServiceMeteoImp", serviceMeteo);
 
