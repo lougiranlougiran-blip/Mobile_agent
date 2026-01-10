@@ -20,11 +20,12 @@ public class Agent extends AgentImpl {
 
     private NeuralNetwork net;                               // Réseau de neurones utilisé par l'agent
     private List<Double> predictions = new ArrayList<>();    // Une prédiction est une accuracy sur un batch d'images (ex: 0.96)
+    private int totalDatasetSize;                            // Taille totale du dataset (utilisé pour les tests)
 
     private String name = "Agent";
     private Node origin;
 
-    public Agent(String host, int port) {
+    public Agent(String host, int port, int totalDatasetSize) {
         super();
 
         // Liste des noeuds (serveurs) avec les adresses IP et les ports
@@ -34,6 +35,8 @@ public class Agent extends AgentImpl {
             new Node("127.0.0.1", 2003),
             new Node("127.0.0.1", 2004)
         );
+
+        this.totalDatasetSize = totalDatasetSize;
 
         // L'origine est le serveur avec l'IP est le Port passés en paramètre à l'exécution
         origin = new Node(host, port);
@@ -61,7 +64,6 @@ public class Agent extends AgentImpl {
         * On simplifie la logique en donnant le dataset complet à chaque serveur puis on récupère
         * à chaque fois une partition différente en fonction de l'index du serveur.
         */
-        int totalDatasetSize = 10_000;
         int partitionSize = totalDatasetSize / nodes.size();
         int currentNodeIndex = (index - 1 + nodes.size()) % nodes.size();
         int start = currentNodeIndex * partitionSize;
@@ -79,15 +81,15 @@ public class Agent extends AgentImpl {
 
 
         // Comparaison et affichage des résultats
-        for (int i = 0; i < output.length; i++) {
-            if (output[i] != inputLabels[i]) {
-                MNISTLoader.DisplayImage(inputData[i]);
-                System.out.println("\u001B[31m" 
-                    + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
-                );
-                System.out.println("-------------------------------------------------------");
-            }
-        }
+        // for (int i = 0; i < output.length; i++) {
+        //     if (output[i] != inputLabels[i]) {
+        //         MNISTLoader.DisplayImage(inputData[i]);
+        //         System.out.println("\u001B[31m" 
+        //             + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
+        //         );
+        //         System.out.println("-------------------------------------------------------");
+        //     }
+        // }
         
         predictions.add(net.DisplayTestAccuracy(inputData, inputLabels));
 

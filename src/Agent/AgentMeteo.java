@@ -91,9 +91,7 @@ public class AgentMeteo extends AgentImpl {
     }
 
 
-    /* Liste des classes à envoyer. Pour cet exmeple, nous avons inclut 
-     * notre librairie personnalisée de réseau de neurones.
-     */
+    /* Liste des classes à envoyer. */
     @Override 
     public List<String> getRequiredClasses() {
         return Arrays.asList(

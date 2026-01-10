@@ -115,7 +115,7 @@ public class Server extends Thread {
     public static void main(String[] args) throws IOException {
 
         if (args.length < 3) {
-             System.err.println("Usage: [-o|-t] ipAddress portNumber <type de meteo : t p h, defaut temperature> <type agent NN Meteo, defaut NN>");
+             System.err.println("Usage: [-o|-t] ipAddress portNumber <type de meteo : t p h, defaut temperature> <type agent NN Meteo, defaut NN> [size]");
         }
 
         // On vérifie si le serveur est l'origine ou une cible
@@ -123,6 +123,9 @@ public class Server extends Thread {
         // Récupération de l'adresse et du port
         String host = args[1];
         int port = Integer.parseInt(args[2]);
+
+        // Pour les tests, faire varier la taille du datatet
+        int totalDatasetSize = (args.length >= 6) ? Integer.parseInt(args[5]) : 10000;
 
         // initialisation du serveur meteo, acces a 1 seul donnee
         switch (args[3]) {
@@ -148,7 +151,7 @@ public class Server extends Thread {
         try (ServerSocket ss = new ServerSocket(port)) {
 
             if (isOrigin) {
-                if (args[4].contains("Meteo")) {
+                if (args.length >= 5 && args[4].contains("Meteo")) {
                     Class<?> agentClass = Class.forName("Agent.AgentMeteo");   // Chargement de la classe ayant pour nom le nom passé en paramètres
                     IAgent agent = (IAgent) agentClass
                             .getConstructor(String.class, int.class)           // On récupère le constructeur avec les paramètres
@@ -158,8 +161,8 @@ public class Server extends Thread {
                 } else { 
                     Class<?> agentClass = Class.forName("Agent.Agent");
                     IAgent agent = (IAgent) agentClass
-                            .getConstructor(String.class, int.class)
-                            .newInstance(host, port);
+                            .getConstructor(String.class, int.class, int.class)
+                            .newInstance(host, port, totalDatasetSize);
 
                     new Server(null, false).launchAgent(agent);
                 }
