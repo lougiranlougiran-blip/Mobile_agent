@@ -23,12 +23,14 @@ public class Client {
 
     public static void main(String args[]) throws NotBoundException, MalformedURLException, RemoteException {
         /*consulte les 3 serveurs suivant dont les ports sont donnée en argument */
-        if (args.length < 3) {
-            System.err.println("Usage : java ServerRMI <port1> <port2> <port3>");
+        if (args.length < 4) {
+            System.err.println("Usage : java ServerRMI <port1> <port2> <port3> [size]");
             System.exit(1);
         }
 
         net = NeuralNetwork.LoadFromFile("src/resources/model.txt"); 
+
+        int totalDatasetSize = Integer.parseInt(args[3]);        
 
          /* 
         * Traitement effectuée par le client sur chaque serveur
@@ -44,7 +46,6 @@ public class Client {
             * On simplifie la logique en donnant le dataset complet à chaque serveur puis on récupère
             * à chaque fois une partition différente en fonction de l'index du serveur.
             */
-            int totalDatasetSize = 10_000;
             int partitionSize = totalDatasetSize / 3;
             int currentNodeIndex = index;
             int start = currentNodeIndex * partitionSize;
@@ -63,18 +64,18 @@ public class Client {
                 System.out.println("Données reçues : " + inputLabels.length + " lignes");
 
                 // Prédictions
-                double[] output = net.PredictAllClasses(inputData);
+                // double[] output = net.PredictAllClasses(inputData);
           
-                // Comparaison et affichage des résultats
-                for (int i = 0; i < output.length; i++) {
-                    if (output[i] != inputLabels[i]) {
-                        MNISTLoader.DisplayImage(inputData[i]);
-                        System.out.println("\u001B[31m" 
-                            + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
-                        );
-                        System.out.println("-------------------------------------------------------");
-                    }
-                }
+                // // Comparaison et affichage des résultats
+                // for (int i = 0; i < output.length; i++) {
+                //     if (output[i] != inputLabels[i]) {
+                //         MNISTLoader.DisplayImage(inputData[i]);
+                //         System.out.println("\u001B[31m" 
+                //             + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
+                //         );
+                //         System.out.println("-------------------------------------------------------");
+                //     }
+                // }
                 
                 predictions.add(net.DisplayTestAccuracy(inputData, inputLabels));
 
