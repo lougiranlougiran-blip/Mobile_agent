@@ -7,9 +7,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 NB_SERVEURS=$1
-SIZE=10000
+SIZE=3000
 BASE_DIR="$HOME/Documents/N7/intergiciel/Projet/test"
-OUT_CSV="results_rmi_10k_data_5s.csv"
+OUT_CSV="results_rmi_10k_data_.csv"
 
 # 0. Nettoyage initial des ports
 echo "Nettoyage des ports 2002 à $((2001 + NB_SERVEURS))..."
