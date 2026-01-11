@@ -1,6 +1,5 @@
 package Client;
 
-import Loader.MNISTLoader;
 import Model.NeuralNetwork;
 import Server.Service;
 import java.net.MalformedURLException;
@@ -22,15 +21,17 @@ public class Client {
     private static List<Double> predictions = new ArrayList<>();    // Une prédiction est une accuracy sur un batch d'images (ex: 0.96)
 
     public static void main(String args[]) throws NotBoundException, MalformedURLException, RemoteException {
-        /*consulte les 3 serveurs suivant dont les ports sont donnée en argument */
-        if (args.length < 4) {
-            System.err.println("Usage : java ServerRMI <port1> <port2> <port3> [size]");
+        // On attend au moins un port et une taille
+        if (args.length < 2) {
+            System.err.println("Usage : java ServerRMI <port1> <port2> ... <portn> [size]");
             System.exit(1);
         }
 
+        int totalDatasetSize = Integer.parseInt(args[args.length - 1]);
+        int numServers = args.length - 1;
+
         net = NeuralNetwork.LoadFromFile("src/resources/model.txt"); 
 
-        int totalDatasetSize = Integer.parseInt(args[3]);        
 
          /* 
         * Traitement effectuée par le client sur chaque serveur
@@ -38,20 +39,21 @@ public class Client {
         * Le client récupère les images (sur le serveur), prédit la classe de chaque image puis compare ses résultats
         * avec les résultats attendus. Ici, on affiche les images mal classées (optionnel).
         */
-        for (int index = 0; index < 3; index++) {
+        for (int index = 0; index < numServers; index++) {
+            String port = args[index];
+
             // on va sur la machine suivante, on recupère le stub rmi
-            Service s = (Service) Naming.lookup("//localhost:" + args[index] + "/ServiceImp");;
+            Service s = (Service) Naming.lookup("//localhost:" + port + "/ServiceImp");;
 
             /* 
             * On simplifie la logique en donnant le dataset complet à chaque serveur puis on récupère
             * à chaque fois une partition différente en fonction de l'index du serveur.
             */
-            int partitionSize = totalDatasetSize / 3;
-            int currentNodeIndex = index;
-            int start = currentNodeIndex * partitionSize;
+            int partitionSize = totalDatasetSize / numServers;
+            int start = index * partitionSize;
 
             // Permet de gérer le cas où le dataset n'est pas divisible par le nombre de serveurs
-            if (currentNodeIndex == 3 - 1) {
+            if (index == numServers - 1) {
                 partitionSize = totalDatasetSize - start; 
             }
 
@@ -62,20 +64,6 @@ public class Client {
                 System.out.println("Données reçues : " + inputData.length + " lignes");
                 double[] inputLabels = s.getBatchLabels(start, partitionSize);
                 System.out.println("Données reçues : " + inputLabels.length + " lignes");
-
-                // Prédictions
-                // double[] output = net.PredictAllClasses(inputData);
-          
-                // // Comparaison et affichage des résultats
-                // for (int i = 0; i < output.length; i++) {
-                //     if (output[i] != inputLabels[i]) {
-                //         MNISTLoader.DisplayImage(inputData[i]);
-                //         System.out.println("\u001B[31m" 
-                //             + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
-                //         );
-                //         System.out.println("-------------------------------------------------------");
-                //     }
-                // }
                 
                 predictions.add(net.DisplayTestAccuracy(inputData, inputLabels));
 
