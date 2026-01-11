@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import Model.NeuralNetwork;
-import Loader.MNISTLoader;
 
 import Server.Node;
 import Server.Service;
@@ -30,10 +29,11 @@ public class Agent extends AgentImpl {
 
         // Liste des noeuds (serveurs) avec les adresses IP et les ports
         List<Node> nodes = Arrays.asList(
-            new Node("127.0.0.1", 2001),
             new Node("127.0.0.1", 2002),
             new Node("127.0.0.1", 2003),
-            new Node("127.0.0.1", 2004)
+            new Node("127.0.0.1", 2004),
+            new Node("127.0.0.1", 2005),
+            new Node("127.0.0.1", 2006)
         );
 
         this.totalDatasetSize = totalDatasetSize;
@@ -76,21 +76,7 @@ public class Agent extends AgentImpl {
         // Récupération des données et des labels
         double[][] inputData = s.getBatchData(start, partitionSize);
         double[] inputLabels = s.getBatchLabels(start, partitionSize);
-        // Prédictions
-        double[] output = net.PredictAllClasses(inputData);
-
-
-        // Comparaison et affichage des résultats
-        // for (int i = 0; i < output.length; i++) {
-        //     if (output[i] != inputLabels[i]) {
-        //         MNISTLoader.DisplayImage(inputData[i]);
-        //         System.out.println("\u001B[31m" 
-        //             + "Prediction incorrect: " + output[i] + ". Attendue: " + inputLabels[i] + "\u001B[0m"
-        //         );
-        //         System.out.println("-------------------------------------------------------");
-        //     }
-        // }
-        
+ 
         predictions.add(net.DisplayTestAccuracy(inputData, inputLabels));
 
         System.out.print("\n\n");

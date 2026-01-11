@@ -38,8 +38,6 @@ public abstract class AgentImpl implements IAgent {
 
     protected String name;              // Nom de l'agent
     protected Node origin;              // Serveur d'origine        
-    protected Node previous;            // Serveur sur lequel l'agent était précédemment
-    protected Node next;                // Prochain serveur sur lequel se déplacera l'agent
     protected int index;                // Index qui permet de suivre sur quel serveur se trouve l'agent
 
     // Table des services récupérés sur un serveur, et donnés par le serveur
@@ -53,11 +51,77 @@ public abstract class AgentImpl implements IAgent {
         this.nodes = nodes;
         this.origin = origin;
         this.name = name;
-        
-        // Au départ, l'agent est sur le serveur d'origine
-        index = 0;
-        next = nodes.get(index);
-        previous = null;
+        this.index = -1; // Au départ, l'agent est sur le serveur d'origine
+    }
+
+    /* Fonction principale de l'agent. Cette fonction pourrait aussi être surchargée DANS l'agent,
+     * mais son implantation ici est correcte car elle reste générique et permet d'éviter de réécrire
+     * la même logique de déplacement à chaque fois.    
+     */
+    @Override
+    public void main() throws IOException {
+
+        if (!start && index >= nodes.size()) {                      // On est revenu à l'origine
+            onComeBack();                                           // On effectue le traitement lorsque l'agent revient
+            Server.stopServer(origin.getHost(), origin.getPort());  // On envoie une notification au serveur pour qu'il s'arrete
+        } else {
+            execute();                                              // Sinon, on est au départ ou sur un serveur cible
+        }
+
+        /* Un verrou est partagé entre le serveur et l'agent via les services du serveur.
+         * L'agent notifie le serveur une fois son traitement terminé pour que le serveur puisse libérer les ressources
+         * et continuer son exécution. */
+        Object o = getServerServices().get(this.getClass().getName()+"_lock");
+		synchronized(o) {o.notify();}
+    }
+
+    /* Fonction qui gère la logique de déplacement de l'agent. A chaque appel, l'agent
+     * effectue son traitement local via la fonction process(), puis se déplace vers le
+     * noeud suivant ou revient à l'origine si tous les noeuds ont été visités.
+    */
+    public void execute() throws IOException {
+        if (start) {
+            start = false;
+            index = 0;
+            System.out.println("Agent " + name + " has successfully started.");
+            move(); 
+        } else {
+            System.out.println("Agent arrived on node: " + nodes.get(index));
+            process();
+            
+            if (index < nodes.size() - 1) {
+                index++;
+                move();
+            } else {
+                index++;
+                System.out.println("All targets visited, returning to origin: " + origin);
+                back();
+            }
+        }
+    }
+
+    /* Fonction permettant de déplacer l'agent vers le noeud suivant 
+     * On recupère d'abord le noeud suivant, puis on ouvre la connexion,
+     * on envoie le message, et finalement on ferme la connexion.
+     */
+    @Override
+	public void move() throws IOException {
+        Node next = nodes.get(index);
+        System.out.println("Moving to next node: " + next);
+        startConnection(next.getHost(), next.getPort());
+        sendMessage();
+        stopConnection();
+    }
+
+    /* Fonction permettant de déplacer l'agent vers le noeud d'origine
+     * On ouvre la connexion, on envoie le message (contenant les résultats)
+     * et finalement on ferme la connexion.
+     */
+    @Override
+	public void back() throws IOException {
+        startConnection(origin.getHost(), origin.getPort());
+        sendMessage();
+        stopConnection();
     }
 
     /* Permet d'ouvrir un socket et de communiquer avec le serveur
@@ -65,7 +129,6 @@ public abstract class AgentImpl implements IAgent {
     public void startConnection(String host, int port) {
         try {
             clientSocket = new Socket(host, port);            // Ouverture du socket
-
             socketOS = clientSocket.getOutputStream();        // On récupère le flux du socket pour envoyer des octets
             objectBAOS = new ByteArrayOutputStream();         // Flux pour sérialiser l'agent dans un tableau d'octets (taille inconnue)
             objectOS = new ObjectOutputStream(objectBAOS);    // Flux pour sérialiser l'agent
@@ -79,46 +142,19 @@ public abstract class AgentImpl implements IAgent {
     /* Sérialise un objet en tableau d'octets */
     public byte[] serializeObject(Object obj) {
         try {
-        objectOS.writeObject(obj);               // On écrit l'objet dans le flux
-        objectOS.flush();                        // On vide pour envoyer immédiatement
-        return objectBAOS.toByteArray();         // On récupère le tableau d'octets
-
+            objectOS.writeObject(obj);               // On écrit l'objet dans le flux
+            objectOS.flush();                        // On vide pour envoyer immédiatement
+            return objectBAOS.toByteArray();         // On récupère le tableau d'octets
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /* Retourne la liste des classes nécessaires pour exécuter l'agent.
-       Cette liste peut être surchargée dans la classe Agent si besoin.
-       Elle permet au code de fonctionner si la logique métier tient dans l'agent seul.
-     */
-    public List<String> getRequiredClasses() {
-        return Arrays.asList(
-            "Agent.AgentImpl",
-            "Agent.IAgent",
-            "Agent.JarFactory",
-            "Server.Service",
-            "Server.Node",
-            this.getClass().getName()
-        );
-    }
-
     /* Envoie un message contenant le code (jar) et l'objet sérialisé de l'agent.
-       C'est cette fonction qui envoie réellement l'agent au serveur.*/
+    C'est cette fonction qui envoie réellement l'agent au serveur.*/
     public void sendMessage() throws IOException {
-        byte[] codeToSend;
-
-        if (ownCode != null) {
-            codeToSend = ownCode;                             // Si le code est déjà présent dans l'agent, on l'utilise
-        } else {
-            List<String> classesList = getRequiredClasses();  // Sinon, on récupère la liste des classes nécessaires
-            codeToSend = JarFactory.createJar(classesList);   // et on génère le jar correspondant
-        }
-
-        // Sérialisation de l'agent
-        byte[] objectBytes = serializeObject(this);          
-
-        // Envoi des données sur le réseau
+        byte[] codeToSend = (ownCode != null) ? ownCode : JarFactory.createJar(getRequiredClasses());
+        byte[] objectBytes = serializeObject(this);          // Sérialisation de l'agent  
         dataOS.writeInt(codeToSend.length);                  // Taille du JAR
         dataOS.write(codeToSend);                            // Contenu du JAR
         dataOS.writeInt(objectBytes.length);                 // Taille de l'agent
@@ -133,6 +169,14 @@ public abstract class AgentImpl implements IAgent {
         objectOS.close();
         socketOS.close();
         clientSocket.close();
+    }
+
+    /* Retourne la liste des classes nécessaires pour exécuter l'agent.
+       Cette liste peut être surchargée dans la classe Agent si besoin.
+       Elle permet au code de fonctionner si la logique métier tient dans l'agent seul.
+     */
+    public List<String> getRequiredClasses() {
+        return Arrays.asList("Agent.AgentImpl", "Agent.IAgent", "Agent.JarFactory", "Server.Service", "Server.Node", this.getClass().getName());
     }
 
     /* Fonction appelée par le serveur pour transmettre à l'agent les services qu'il propose */
@@ -151,88 +195,6 @@ public abstract class AgentImpl implements IAgent {
     @Override
     public void setOwnCode(byte[] code) {
         this.ownCode = code;
-    }
-
-    /* Fonction permettant de récupérer le noeud suivant */
-    public void goNext() {
-        previous = next;
-        next = nodes.get(index++);
-    }
-
-    /* Fonction permettant de rétablir l'état d'origine */
-    public void goBack() {
-        previous = next;
-        next = null;
-        index = 0;
-    }
-
-    /* Fonction permettant de déplacer l'agent vers le noeud suivant 
-     * On recupère d'abord le noeud suivant, puis on ouvre la connexion,
-     * on envoie le message, et finalement on ferme la connexion.
-     */
-    @Override
-	public void move() throws IOException {
-        this.goNext();
-        startConnection(next.getHost(), next.getPort());
-        sendMessage();
-        stopConnection();
-    }
-
-
-    /* Fonction permettant de déplacer l'agent vers le noeud d'origine
-     * On récupère d'abord le noeud d'origine, puis on ouvre la connexion,
-     * on envoie le message (contenant les résultats), et finalement on ferme la connexion.
-     */
-    @Override
-	public void back() throws IOException {
-        this.goBack();
-        startConnection(origin.getHost(), origin.getPort());
-        sendMessage();
-        stopConnection();
-    }
-
-    /* Fonction principale de l'agent. Cette fonction pourrait aussi être surchargée DANS l'agent,
-     * mais son implantation ici est correcte car elle reste générique et permet d'éviter de réécrire
-     * la même logique de déplacement à chaque fois.    
-     */
-    @Override
-    public void main() throws IOException {
-
-        if (next == null) {                                         // On est sur le dernier serveur, il faut revenir à l'origine
-            onComeBack();                                           // On effectue le traitement lorsque l'agent revient
-            Server.stopServer(origin.getHost(), origin.getPort());  // On envoie une notification au serveur pour qu'il s'arrete
-        } else {
-            execute();                                              // Sinon, on exécute le traitement localement
-        }
-
-        /* Un verrou est partagé entre le serveur et l'agent via les services du serveur.
-         * L'agent notifie le serveur une fois son traitement terminé pour que le serveur puisse libérer les ressources
-         * et continuer son exécution. */
-        Object o = getServerServices().get(this.getClass().getName()+"_lock");
-		synchronized(o) {o.notify();}
-    }
-
-    /* Fonction qui gère la logique de déplacement de l'agent. A chaque appel, l'agent
-     * effectue son traitement local via la fonction process(), puis se déplace vers le
-     * noeud suivant ou revient à l'origine si tous les noeuds ont été visités.
-    */
-    public void execute() throws IOException {
-        if (start) {
-            start = false;
-            System.out.println("Agent " + name + " has successfully started.");
-            System.out.println("Agent moving to: " + next);
-            move();
-        } else if (index < nodes.size()) {
-            System.out.println("Agent coming from: " + previous);
-            process();
-            System.out.println("Agent moving to: " + next);
-            move();
-        } else {
-            System.out.println("Agent coming from: " + previous);
-            process();
-            System.out.println("Agent moving to: " + origin);
-            back();
-        }
     }
 
     /* Fonction abastraite implémentée dans l'agent qui contient un traitement spécifique (ex: additionner des nombres) */

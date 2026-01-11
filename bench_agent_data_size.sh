@@ -11,7 +11,7 @@ S3_DIR="$BASE_DIR/s3/code"
 # Chemin vers ton code Client/Origine (ajuste si nécessaire)
 ORIGIN_DIR="$(pwd)" 
 
-OUT_CSV="results_agent.csv"
+OUT_CSV="results_agent_100ms_1mb_3servers_k_data.csv"
 echo "size,time_ms" > "$OUT_CSV"
 
 # 1. LANCEMENT UNIQUE DES SERVEURS CIBLES
