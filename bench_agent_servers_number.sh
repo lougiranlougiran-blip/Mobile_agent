@@ -9,7 +9,7 @@ fi
 NB_SERVEURS=$1  # Nombre de serveurs cibles (ex: 3)
 SIZE=3000       # Taille fixe du dataset pour tester l'impact du nombre de sauts
 BASE_DIR="$HOME/Documents/N7/intergiciel/Projet/test"
-OUT_CSV="results_agent_10k_data_5s.csv"
+OUT_CSV="results_agent_10k_data.csv"
 
 # 0. Nettoyage initial des ports (Origine 2001 + Cibles 2002...N)
 echo "Nettoyage des ports 2001 à $((2001 + NB_SERVEURS))..."

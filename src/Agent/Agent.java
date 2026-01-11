@@ -65,11 +65,10 @@ public class Agent extends AgentImpl {
         * à chaque fois une partition différente en fonction de l'index du serveur.
         */
         int partitionSize = totalDatasetSize / nodes.size();
-        int currentNodeIndex = (index - 1 + nodes.size()) % nodes.size();
-        int start = currentNodeIndex * partitionSize;
+        int start = index * partitionSize;
 
         // Permet de gérer le cas où le dataset n'est pas divisible par le nombre de serveurs
-        if (currentNodeIndex == nodes.size() - 1) {
+        if (index == nodes.size() - 1) {
             partitionSize = totalDatasetSize - start; 
         }
 
