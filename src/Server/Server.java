@@ -48,7 +48,7 @@ public class Server extends Thread {
 
         /* La technique est de créer une connexion supplémentaire "fantôme" qui va débloquer le serveur
         toujours en attente de connexions. Le serveur va consulter son état, et terminer l'attente. */
-        try (Socket _ = new Socket(host, port)) {
+        try (Socket so_tmp = new Socket(host, port)) {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -21,10 +21,8 @@ public class AgentMeteo extends AgentImpl {
         
         // Liste des noeuds (serveurs) avec les adresses IP et les ports
         List<Node> nodes = Arrays.asList(
-            new Node("127.0.0.1", 2001),
-            new Node("127.0.0.1", 2002),
-            new Node("127.0.0.1", 2003),
-            new Node("127.0.0.1", 2004)
+            new Node("147.127.135.136", 2003),
+            new Node("147.127.135.138", 2004)
         );
         
         // L'origine est le serveur avec l'IP est le Port passés en paramètre à l'exécution
@@ -46,28 +44,31 @@ public class AgentMeteo extends AgentImpl {
     public void process() {
         // On recupère le service Meteo du server
         ServiceMeteo s = (ServiceMeteo) serverServices.get("meteo");
+        
         // si on n'est pas sur le serveur de départ on recupere les donnée du serveur
-        if (index != 0) {
-            System.out.println("Using service: " + s.getName());
+        System.out.println("Using service: " + s.getName());
 
-            double[][] tmp;
-            switch (s.getName()) {
-                case "Temperature" :
-                    tmp = s.getTemperatureData(count);
-                    break;
-                case "Humidite" :
-                    tmp = s.getHumiditeData(count);
-                    break;
-                case "Pression" :
-                    tmp = s.getPressionData(count);
-                    break;
-                default:
-                    // normalement impossible
-                    throw new AssertionError();
-            }
-            // on traite et enregistre les données du serveur.
-            meteoResult[index - 1] = new String[] {s.getName(), String.valueOf(average(tmp))};
+        double[][] tmp;
+        switch (s.getName()) {
+            case "Temperature" :
+                tmp = s.getTemperatureData(count);
+                break;
+            case "Humidite" :
+                tmp = s.getHumiditeData(count);
+                break;
+            case "Pression" :
+                tmp = s.getPressionData(count);
+                break;
+            default:
+                // normalement impossible
+                throw new AssertionError();
         }
+            
+        // on traite et enregistre les données du serveur.
+        if (index != -1) {
+            meteoResult[index] = new String[] {s.getName(), String.valueOf(average(tmp))};
+        }
+        
 
     }
 

@@ -29,11 +29,9 @@ public class Agent extends AgentImpl {
 
         // Liste des noeuds (serveurs) avec les adresses IP et les ports
         List<Node> nodes = Arrays.asList(
-            new Node("127.0.0.1", 2002),
-            new Node("127.0.0.1", 2003),
-            new Node("127.0.0.1", 2004),
-            new Node("127.0.0.1", 2005),
-            new Node("127.0.0.1", 2006)
+            
+            new Node("147.127.135.136", 2003),
+            new Node("147.127.135.138", 2004)
         );
 
         this.totalDatasetSize = totalDatasetSize;
