@@ -10,18 +10,20 @@ import java.rmi.registry.LocateRegistry;
  */
 public final class ServeurRMI {
 
-  public static String serverURI = "//localhost:";
+  public static String serverURI = "//";
 
   public static void main(String args[]) {
     try {
 
         /* recuperation de l'argument : port sur la machine type de donne pour la meteo*/
-        if (args.length < 2) {
-            System.err.println("Usage : java ServerRMI <port> <t Temperature, p pression, h humidite>");
+        if (args.length < 3) {
+            System.err.println("Usage : java ServerRMI ipAdress <port> <t Temperature, p pression, h humidite>");
             System.exit(1);
         }
-        String port = args[0];
-        serverURI = serverURI + port;
+        // initiailsation de l'adresse :
+        serverURI = "//" + args[0] + ":" + args[1];
+        String port = args[1];
+  
 
         /* Launching the naming service – rmiregistry – within the JVM */
         LocateRegistry.createRegistry(Integer.parseInt(port));
@@ -31,7 +33,7 @@ public final class ServeurRMI {
         
         // Création du service pour la Meteo
         String typeServiceMeteo = "";
-        switch (args[1]) {
+        switch (args[2]) {
           case "t" :
               typeServiceMeteo = "Temperature";
               break;
@@ -44,6 +46,9 @@ public final class ServeurRMI {
           default:
               throw new AssertionError();
         }
+
+
+
         ServiceMeteo serviceMeteo = new ServiceMeteoImp(typeServiceMeteo);
 
         // Publication des services

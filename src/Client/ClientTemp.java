@@ -18,16 +18,17 @@ public class ClientTemp {
         Double Humidite = 0.;
 
 
-        if (args.length < 4) {
-            System.err.println("Usage : java ServerRMI <portTemperature> <portHumidite> <portPresssion> <number of data>");
+        if (args.length < 3) {
+            System.err.println("Usage : java ClientTemp <portTemperature> <ipTemperature> (<portPression> <ipPression> <portHumidite> <ipHumidite>) [size]");
             System.exit(1);
         }
 
-        for (int index = 0; index < 3; index++) {
-            // on va sur la machine suivante, on recupère le stub rmi
-            ServiceMeteo s = (ServiceMeteo) Naming.lookup("//localhost:" + args[index] + "/ServiceMeteoImp");
+        int numServers = (args.length - 1)/2;
 
-            int count = Integer.parseInt(args[3]);
+        for (int index = 0; index < args.length - 1; index = index + 2) {
+            // on va sur la machine suivante, on recupère le stub rmi
+            ServiceMeteo s = (ServiceMeteo) Naming.lookup("//" + args[index + 1] + ":" + args[index] + "/ServiceMeteoImp");
+            int count = Integer.parseInt(args[args.length - 1]);
 
             // en fonction de sur quel serveur on est, on ne recupère pas les mêmes données : 3 serveurs, 1 pour chaque donnée
             switch (index) {
@@ -35,13 +36,13 @@ public class ClientTemp {
                     double[][] tmp = s.getTemperatureData(count);
                     Temperature = average(tmp);
                     break;
-                case 1 :
-                    double[][] hum = s.getHumiditeData(count);
-                    Humidite = average(hum);
-                    break;
                 case 2 :
                     double[][] pres = s.getPressionData(count);
                     Pression = average(pres);
+                    break;
+                case 4 :
+                    double[][] hum = s.getHumiditeData(count);
+                    Humidite = average(hum);
                     break;
                 default:
                     throw new AssertionError();

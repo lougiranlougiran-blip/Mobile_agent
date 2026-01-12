@@ -23,12 +23,12 @@ public class Client {
     public static void main(String args[]) throws NotBoundException, MalformedURLException, RemoteException {
         // On attend au moins un port et une taille
         if (args.length < 2) {
-            System.err.println("Usage : java ServerRMI <port1> <port2> ... <portn> [size]");
+            System.err.println("Usage : java ServerRMI <port1> <ipA1> <port2> <ipA2>... <portn> <ipAn> [size]");
             System.exit(1);
         }
 
         int totalDatasetSize = Integer.parseInt(args[args.length - 1]);
-        int numServers = args.length - 1;
+        int numServers = (args.length - 1)/2;
 
         net = NeuralNetwork.LoadFromFile("src/resources/model.txt"); 
 
@@ -39,11 +39,12 @@ public class Client {
         * Le client récupère les images (sur le serveur), prédit la classe de chaque image puis compare ses résultats
         * avec les résultats attendus. Ici, on affiche les images mal classées (optionnel).
         */
-        for (int index = 0; index < numServers; index++) {
+        for (int index = 0; index < numServers; index = index + 2) {
             String port = args[index];
+            String adress = args[index + 1];
 
             // on va sur la machine suivante, on recupère le stub rmi
-            Service s = (Service) Naming.lookup("//localhost:" + port + "/ServiceImp");;
+            Service s = (Service) Naming.lookup("//" + adress + ":" + port + "/ServiceImp");;
 
             /* 
             * On simplifie la logique en donnant le dataset complet à chaque serveur puis on récupère
