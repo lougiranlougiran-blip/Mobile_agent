@@ -23,8 +23,6 @@ public class ClientTemp {
             System.exit(1);
         }
 
-        int numServers = (args.length - 1)/2;
-
         for (int index = 0; index < args.length - 1; index = index + 2) {
             // on va sur la machine suivante, on recupère le stub rmi
             ServiceMeteo s = (ServiceMeteo) Naming.lookup("//" + args[index + 1] + ":" + args[index] + "/ServiceMeteoImp");
