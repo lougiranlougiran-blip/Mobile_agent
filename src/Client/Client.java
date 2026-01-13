@@ -39,22 +39,22 @@ public class Client {
         * Le client récupère les images (sur le serveur), prédit la classe de chaque image puis compare ses résultats
         * avec les résultats attendus. Ici, on affiche les images mal classées (optionnel).
         */
-        for (int index = 0; index < numServers; index = index + 2) {
+        for (int index = 0; index < args.length - 2; index = index + 2) {
             String port = args[index];
             String adress = args[index + 1];
 
             // on va sur la machine suivante, on recupère le stub rmi
-            Service s = (Service) Naming.lookup("//" + adress + ":" + port + "/ServiceImp");;
+            Service s = (Service) Naming.lookup("//" + adress + ":" + port + "/ServiceImp");
 
             /* 
             * On simplifie la logique en donnant le dataset complet à chaque serveur puis on récupère
             * à chaque fois une partition différente en fonction de l'index du serveur.
             */
             int partitionSize = totalDatasetSize / numServers;
-            int start = index * partitionSize;
+            int start = (index/2) * partitionSize;
 
             // Permet de gérer le cas où le dataset n'est pas divisible par le nombre de serveurs
-            if (index == numServers - 1) {
+            if (index == args.length - 2) {
                 partitionSize = totalDatasetSize - start; 
             }
 
@@ -63,6 +63,7 @@ public class Client {
                 // Récupération des données et des labels
                 double[][] inputData = s.getBatchData(start, partitionSize);
                 System.out.println("Données reçues : " + inputData.length + " lignes");
+
                 double[] inputLabels = s.getBatchLabels(start, partitionSize);
                 System.out.println("Données reçues : " + inputLabels.length + " lignes");
                 
