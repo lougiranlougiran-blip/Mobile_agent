@@ -22,7 +22,7 @@ public abstract class AgentImpl implements IAgent {
      */
 
     /* 
-     * Le mot-clé 'transient' indique q'un élément ne doit pas être sérialisé.
+     * Le mot-clé 'transient' indique qu'un élément ne doit pas être sérialisé.
      * C'est le cas des sockets et des output streams.
      */
     private transient Socket clientSocket;
@@ -176,7 +176,7 @@ public abstract class AgentImpl implements IAgent {
        Elle permet au code de fonctionner si la logique métier tient dans l'agent seul.
      */
     public List<String> getRequiredClasses() {
-        return Arrays.asList("Agent.AgentImpl", "Agent.IAgent", "Agent.JarFactory", "Server.Service", "Server.Node", this.getClass().getName());
+        return Arrays.asList("Agent.IAgent", "Agent.JarFactory", "Server.Service", "Server.Node", this.getClass().getName());
     }
 
     /* Fonction appelée par le serveur pour transmettre à l'agent les services qu'il propose */

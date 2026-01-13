@@ -19,7 +19,7 @@ public class Agent extends AgentImpl {
 
     private NeuralNetwork net;                               // Réseau de neurones utilisé par l'agent
     private List<Double> predictions = new ArrayList<>();    // Une prédiction est une accuracy sur un batch d'images (ex: 0.96)
-    private int totalDatasetSize;                            // Taille totale du dataset (utilisé pour les tests)
+    private int totalDatasetSize;                            // Taille totale du dataset (utilisée pour les tests)
 
     private String name = "Agent";
     private Node origin;
@@ -50,7 +50,7 @@ public class Agent extends AgentImpl {
      * Traitement effectuée par l'agent, implementation de la méthode abstraite de AgentImpl.
      * Pour cet exemple, chaque serveur possède des images stockées localement (un partition du dataset MNIST).
      * L'agent récupère les images (sur le serveur), prédit la classe de chaque image puis compare ses résultats
-     * avec les résultats attendus. Ici, on affiche les images mal classées (optionnel).
+     * avec les résultats attendus.
      */
     @Override
     public void process() {
