@@ -21,8 +21,8 @@ public class AgentMeteo extends AgentImpl {
         
         // Liste des noeuds (serveurs) avec les adresses IP et les ports
         List<Node> nodes = Arrays.asList(
-            new Node("147.127.135.136", 2003),
-            new Node("147.127.135.138", 2004)
+            new Node("147.127.133.97", 2003),
+            new Node("147.127.133.114", 2004)
         );
         
         // L'origine est le serveur avec l'IP est le Port passés en paramètre à l'exécution
